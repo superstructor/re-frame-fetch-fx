@@ -1,0 +1,317 @@
+:source-highlighter: coderay
+:source-language: clojure
+:toc:
+:toc-placement: preamble
+:sectlinks:
+:sectanchors:
+:toc:
+:icons: font
+
+image:https://github.com/superstructor/re-frame-fetch-fx/workflows/ci/badge.svg["CI", link="https://github.com/superstructor/re-frame-fetch-fx/actions?workflow=ci"]
+image:https://github.com/superstructor/re-frame-fetch-fx/workflows/cd/badge.svg["CD", link="https://github.com/superstructor/re-frame-fetch-fx/actions?workflow=cd"]
+image:https://img.shields.io/github/v/tag/superstructor/re-frame-fetch-fx?style=flat["GitHub tag (latest by date)", link="https://github.com/superstructor/re-frame-fetch-fx/tags"]
+image:https://img.shields.io/clojars/v/superstructor/re-frame-fetch-fx.svg["Clojars Project", link="https://clojars.org/superstructor/re-frame-fetch-fx"]
+image:https://img.shields.io/github/issues-raw/superstructor/re-frame-fetch-fx?style=flat["GitHub issues", link="https://github.com/superstructor/re-frame-fetch-fx/issues"]
+image:https://img.shields.io/github/issues-pr/superstructor/re-frame-fetch-fx?style=flat["GitHub pull requests", link="https://github.com/superstructor/re-frame-fetch-fx/pulls"]
+image:https://img.shields.io/github/license/superstructor/re-frame-fetch-fx?style=flat["License", link="https://github.com/superstructor/re-frame-fetch-fx/blob/master/LICENSE"]
+
+== js/Fetch Effect Handler for re-frame
+
+This re-frame library contains an
+https://github.com/superstructor/re-frame/blob/develop/docs/Effects.md[Effect Handler]
+for fetching resources.
+
+Keyed `:fetch`, it wraps browsers' native
+https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch[`js/fetch` API].
+
+== Quick Start
+
+=== Step 1. Add Dependency
+
+Add the following project dependency:
+image:https://img.shields.io/clojars/v/superstructor/re-frame-fetch-fx.svg["Clojars Project", link="https://clojars.org/superstructor/re-frame-fetch-fx"]
+
+Requires re-frame >= 0.8.0.
+
+=== Step 2. Registration and Use
+
+In the namespace where you register your event handlers, prehaps called
+`events.cljs`, you have two things to do.
+
+*First*, add this require to the `ns`:
+
+```
+(ns app.events
+  (:require
+   ...
+   [superstructor.re-frame.fetch-fx]
+   ...))
+```
+
+Because we never subsequently use this require, it appears redundant. But its
+existence will cause the `:fetch` effect handler to self-register with re-frame,
+which is important to everything that follows.
+
+*Second*, write an event handler which uses this effect:
+
+```
+(reg-event-fx
+  :handler-with-fetch
+  (fn [{:keys [db]} _]
+    {:fetch {:method                 :get
+             :url                    "https://api.github.com/orgs/day8"
+             :mode                   :cors
+             :timeout                5000
+             :response-content-types {#"application/.*json" :json}
+             :on-success             [:good-fetch-result]
+             :on-failure             [:bad-fetch-result]}}))
+```
+
+== Request Content Type
+
+With the exception of JSON there is no special handling of the `:body` value or
+the request's `Content-Type` header. So for anything except JSON you *must*
+handle that yourself.
+
+For convenience for JSON requests `:request-content-type :json` is supported
+which will:
+
+* set the `Content-Type` header of the request to `application/json`
+* evaluate cljs-bean `->js` on the `:body` then `js/JSON.stringify` it.
+
+== Response Content Types
+
+`:response-content-type` is a mapping of pattern or string to a keyword
+representing one of the following processing models in Table 1.
+
+The pattern or string will be matched against the response
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type[`Content-Type` header]
+then the associated keyword is used to determine the processing model and result
+type.
+
+In the absence of a response `Content-Type` header the value that is matched
+against will default to `text/plain`.
+
+In the absence of a match the processing model will default to `:text`.
+
+.Response Content Types
+[options="header,footer"]
+|========================
+| Keyword | Processing | Result Type
+| `:json` | https://developer.mozilla.org/en-US/docs/Web/API/Body/json[`json()`] then https://github.com/mfikes/cljs-bean[cljs-bean `->clj`]| ClojureScript
+| `:text` | https://developer.mozilla.org/en-US/docs/Web/API/Body/text[`text()`] | String
+| `:form-data` | https://developer.mozilla.org/en-US/docs/Web/API/FormData[`formData()`] | https://developer.mozilla.org/en-US/docs/Web/API/FormData[`js/FormData`]
+| `:blob` | https://developer.mozilla.org/en-US/docs/Web/API/Body/blob[`blob()`] | https://developer.mozilla.org/en-US/docs/Web/API/Blob[`js/Blob`]
+| `:array-buffer` | https://developer.mozilla.org/en-US/docs/Web/API/Body/arrayBuffer[`arrayBuffer()`] | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer[`js/ArrayBuffer`]
+|========================
+
+== Comprehensive Example
+
+All possible values of a `:fetch` map.
+
+```
+(reg-event-fx
+  :handler-with-fetch
+  (fn [{:keys [db]} _]
+    {:fetch {;; Required. Can be one of:
+             ;; :get | :head | :post | :put | :delete | :options | :patch
+             :method                 :get
+
+             ;; Required.
+             :url                    "https://api.github.com/orgs/day8"
+
+             ;; Optional. Can be one of:
+             ;; ClojureScript Collection | String | js/FormData | js/Blob | js/ArrayBuffer | js/BufferSource | js/ReadableStream
+             :body                   "a string"
+
+             ;; Optional. Only valid with ClojureScript Collection as :body.
+             :request-content-type   :json
+
+             ;; Optional. Map of URL query params
+             :params                 {:user     "Fred"
+                                      :customer "big one"}
+
+             ;; Optional. Map of HTTP headers.
+             :headers                {"Authorization"  "Bearer QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+                                      "Accept"         "application/json"}
+
+             ;; Optional. Defaults to :same-origin. Can be one of:
+             ;; :cors | :no-cors | :same-origin | :navigate
+             ;; See https://developer.mozilla.org/en-US/docs/Web/API/Request/mode
+             :mode                   :cors
+
+             ;; Optional. Defaults to :include. Can be one of:
+             ;; :omit | :same-origin | :include
+             ;; See https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+             :credentials            :omit
+
+             ;; Optional. Defaults to :follow. Can be one of:
+             ;; :follow | :error | :manual
+             ;; See https://developer.mozilla.org/en-US/docs/Web/API/Request/redirect
+             :redirect               :follow
+
+             ;; Optional. Can be one of:
+             ;; :default | :no-store | :reload | :no-cache | :force-cache | :only-if-cached
+             ;; See https://developer.mozilla.org/en-US/docs/Web/API/Request/cache
+             :cache                  :default
+
+             ;; Optional. Can be one of:
+             ;; :no-referrer | :client
+             ;; See https://developer.mozilla.org/en-US/docs/Web/API/Request/referrer
+             :referrer               :client
+
+             ;; See https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
+             :integrity              "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE="
+
+             :timeout                5000
+
+             :response-content-types {#"application/.*json"      :json
+                                      "text/plain"               :text
+                                      "multipart/form-data"      :form-data
+                                      #"image/.*"                :blob
+                                      "application/octet-stream" :array-buffer}
+
+             ;; for :fetch/abort
+             :request-id             :my-custom-request-id
+             ;; or auto-generated
+             :on-request-id          [:fetch-request-id]
+
+             :on-success             [:good-fetch-result]
+
+             :on-failure             [:bad-fetch-result]}}))
+```
+
+== Success Handling
+
+`:on-success` is dispatched with a response map like:
+
+```
+{:url         "http://localhost..."
+ :ok?         true
+ :redirected? false
+ :status      200
+ :status-text "OK"
+ :type        "cors"
+ :final-uri?  nil
+ :body        "Hello World!"
+ :headers     {:cache-control "private, max-age=0, no-cache" ...}}
+```
+
+Note the type of `:body` changes drastically depending on both the provided
+`:response-content-types` map *and* the response's `Content-Type` header.
+
+== Failure Handling
+
+=== Problems with no Response
+
+Unfortunately for cases where there is no server response the `js/fetch` API
+provides terribly little information that can be captured programatically. If
+`:on-failure` is dispatched with a response like:
+```
+{:problem         :fetch
+ :problem-message "Failed to fetch"}
+```
+
+Then it may be caused by any of the following or something else not included here:
+
+* `:url` syntax error
+* unresolvable hostname in `:url`
+* no network connection
+* Content Security Policy
+* Cross-Origin Resource Sharing (CORS) Policy or lacking `:mode :cors`
+
+Look in the Chrome Developer Tools console. There is usually a useful error
+message indicating the problem but so far I have not found out how to capture it
+to provide more fine grained `:problem` keywords.
+
+=== Problem due to Timeout
+
+If `:timeout` is exceeded, `:on-failure` will be dispatched with a response like:
+
+```
+{:problem         :timeout
+ :problem-message "Fetch timed out"}
+```
+
+=== Problems Reading the Response Body
+
+If there is a problem reading the body after the server has responded, such as
+a JSON syntax error, `:on-failure` will be dispatched with a response like:
+```
+{:problem         :body
+ :reader          :json
+ :problem-message "Unexpected token < in JSON at position 0"
+ ... rest of normal response map excluding :body ... }
+```
+
+=== Problems with the Server
+
+If the server responds with an unsuccessful HTTP status code, such as 500 or 404,
+`:on-failure` will be dispatched with a response like:
+```
+{:problem :server
+ ... rest of normal response map ... }
+```
+
+== Differences to `:http-xhrio`
+
+=== `:uri` Renamed to `:url`
+
+Previously with `:http-xhrio` it was keyed `:uri`.
+
+Now with `:fetch` we follow the
+https://fetch.spec.whatwg.org/[Fetch Standard] nomenclature so it is keyed
+`:url`.
+
+=== `:params` != `:body`
+
+Previously with `:http-xhrio` URL parameters and the request body were both
+keyed as `:params`. Which one it was depended on the `:method` (i.e. GET would
+result in URL parameters whereas POST would result in a request body).
+
+Now with `:fetch` there are two keys.
+
+`:params` is *only* URL parameters. It will always be added to the URL regardless
+of `:method`.
+
+`:body` is the request body. In practice it is only supported for `:put`, `:post`
+and `:patch` methods. Theoretically HTTP request bodies are allowed for all
+methods except `:trace`, but just don't as there be dragons.
+
+=== No `:request-format` or `:response-format`
+
+This has completely changed in every way including the keys used, how to specify
+the handling of the response body and the types of values used for the response
+body. See <<Request Content Type>> and <<Response Content Types>>.
+
+=== Cross-Origin Resource Sharing (CORS)
+
+Previously with `:http-xhrio`
+https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[CORS] requests would
+'just work'.
+
+Now with `:fetch` `:mode :cors` *must* be set explicitly as the default mode for
+`js/fetch` is `:same-origin` which blocks CORS requests.
+
+
+== License
+
+Copyright &copy; 2019 Isaac Johnston.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
