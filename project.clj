@@ -12,7 +12,7 @@
 
                  [cljs-bean                 "1.5.0"]]
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]]}}
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.11"]]}}
 
   :plugins      [[day8/lein-git-inject "0.0.2"]
                  [lein-shadow          "0.1.6"]
