@@ -14,7 +14,7 @@
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.11"]]}}
 
-  :plugins      [[day8/lein-git-inject "0.0.2"]
+  :plugins      [[day8/lein-git-inject "0.0.11"]
                  [lein-shadow          "0.1.6"]
                  [lein-shell           "0.5.0"]]
 
