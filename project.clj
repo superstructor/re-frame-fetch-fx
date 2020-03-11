@@ -9,7 +9,7 @@
                                org.clojure/google-closure-library
                                org.clojure/google-closure-library-third-party]]
                  [thheller/shadow-cljs      "2.8.92"   :scope "provided"]
-                 [re-frame                  "0.10.9"   :scope "provided"]
+                 [re-frame                  "0.12.0"   :scope "provided"]
 
                  [cljs-bean                 "1.5.0"]]
 
