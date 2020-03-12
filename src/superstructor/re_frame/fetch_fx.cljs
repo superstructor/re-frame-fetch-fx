@@ -2,7 +2,6 @@
   (:require
     [clojure.string :as string]
     [goog.object :as obj]
-    [cljs-bean.core :refer [bean ->clj ->js]]
     [re-frame.core :refer [reg-fx dispatch]]))
 
 ;; Utilities
@@ -52,7 +51,7 @@
         credentials (or credentials "include")
         redirect    (or redirect "follow")
         body'       (if (= :json request-content-type)
-                      (js/JSON.stringify (->js body))
+                      (js/JSON.stringify (clj->js body))
                       body)
         headers'    (if (= :json request-content-type)
                       (merge {"Content-Type" "application/json"}
@@ -154,7 +153,7 @@
    response reader-kw js-body]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
   (let [body      (if (= :json reader-kw)
-                    (->clj js-body)
+                    (js->clj js-body :keywordize-keys true)
                     js-body)
         response' (assoc response
                     :body   body

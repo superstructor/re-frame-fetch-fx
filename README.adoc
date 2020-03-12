@@ -77,7 +77,7 @@ For convenience for JSON requests `:request-content-type :json` is supported
 which will:
 
 * set the `Content-Type` header of the request to `application/json`
-* evaluate cljs-bean `->js` on the `:body` then `js/JSON.stringify` it.
+* evaluate `clj->js` on the `:body` then `js/JSON.stringify` it.
 
 == Response Content Types
 
@@ -98,7 +98,7 @@ In the absence of a match the processing model will default to `:text`.
 [options="header,footer"]
 |========================
 | Keyword | Processing | Result Type
-| `:json` | https://developer.mozilla.org/en-US/docs/Web/API/Body/json[`json()`] then https://github.com/mfikes/cljs-bean[cljs-bean `->clj`]| ClojureScript
+| `:json` | https://developer.mozilla.org/en-US/docs/Web/API/Body/json[`json()`] then `js->clj :keywordize-keys true`| ClojureScript
 | `:text` | https://developer.mozilla.org/en-US/docs/Web/API/Body/text[`text()`] | String
 | `:form-data` | https://developer.mozilla.org/en-US/docs/Web/API/FormData[`formData()`] | https://developer.mozilla.org/en-US/docs/Web/API/FormData[`js/FormData`]
 | `:blob` | https://developer.mozilla.org/en-US/docs/Web/API/Body/blob[`blob()`] | https://developer.mozilla.org/en-US/docs/Web/API/Blob[`js/Blob`]
