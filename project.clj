@@ -30,7 +30,9 @@
                 :builds {:browser-test
                          {:target    :browser-test
                           :ns-regexp "-test$"
-                          :test-dir  "resources/public/js/test"}
+                          :test-dir  "target/test"
+                          :devtools  {:http-port  8021
+                                      :http-root "target/test"}}
 
                          :karma-test
                          {:target    :karma

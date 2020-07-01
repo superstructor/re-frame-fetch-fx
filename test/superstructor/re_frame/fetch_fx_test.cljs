@@ -3,8 +3,27 @@
     [clojure.test :refer [deftest is testing async use-fixtures]]
     [clojure.spec.alpha :as s]
     [goog.object :as obj]
-    [re-frame.core :as re-frame]
+    [re-frame.core :as rf]
     [superstructor.re-frame.fetch-fx :as fetch-fx]))
+
+(deftest localhost-test
+  (async done
+    (rf/reg-event-fx :localhost-test-success
+                     (fn [_ [_ {:keys [ok?]}]]
+                       (is ok?)
+                       (done)))
+    (rf/reg-event-fx :localhost-test-failure
+                     (fn [_ [_ res]]
+                       (is false)
+                       (done)))
+    (rf/reg-event-fx :localhost-test
+                     (fn [_ _]
+                       {:fetch {:method     :get
+                                :mode       :no-cors
+                                :url        js/window.location.href
+                                :on-success [:localhost-test-success]
+                                :on-failure [:localhost-test-failure]}}))
+    (rf/dispatch [:localhost-test])))
 
 ;; Utilities
 ;; =============================================================================
