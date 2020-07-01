@@ -2,6 +2,13 @@
 
 #### Changed
 
+- Upgrade ClojureScript to 1.10.773
+
+## 0.0.2
+
+#### Changed
+
+- Use `js->clj` instead of `cljs-bean` for cleaner integration
 - Upgrade ClojureScript to 1.10.597
-- Upgrade shadow-cljs to 2.8.83
-- Upgrade binaryage/devtools to 0.9.11
+- Upgrade shadow-cljs to 2.8.92
+- Upgrade binaryage/devtools to 1.0.0 
