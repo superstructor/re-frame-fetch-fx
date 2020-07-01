@@ -13,8 +13,8 @@
 
   :profiles {:dev {:dependencies [[binaryage/devtools "1.0.0"]]}}
 
-  :plugins      [[day8/lein-git-inject "0.0.11"]
-                 [lein-shadow          "0.1.7"]
+  :plugins      [[day8/lein-git-inject "0.0.14"]
+                 [lein-shadow          "0.2.0"]
                  [lein-shell           "0.5.0"]]
 
   :middleware   [leiningen.git-inject/middleware]
