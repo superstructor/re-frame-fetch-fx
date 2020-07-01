@@ -6,6 +6,7 @@
 - Upgrade lein-shadow to 0.2.0
 - Upgrade binaryage/devtools to 1.0.2
 - Upgrade thheller/shadow-cljs to 2.10.13
+- Upgrade karma to 5.1.0
 
 ## 0.0.2
 
