@@ -11,7 +11,7 @@
                  [thheller/shadow-cljs      "2.8.92"   :scope "provided"]
                  [re-frame                  "0.12.0"   :scope "provided"]]
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "1.0.0"]]}}
+  :profiles {:dev {:dependencies [[binaryage/devtools "1.0.2"]]}}
 
   :plugins      [[day8/lein-git-inject "0.0.14"]
                  [lein-shadow          "0.2.0"]
