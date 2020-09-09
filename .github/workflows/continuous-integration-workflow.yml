@@ -10,4 +10,4 @@ jobs:
       image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
     steps:
       - uses: actions/checkout@v1
-      - run: lein karma-once
+      - run: lein ci

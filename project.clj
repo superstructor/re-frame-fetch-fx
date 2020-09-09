@@ -45,13 +45,14 @@
                                 :macosx          "open"
                                 :linux           "xdg-open"}}}
 
-  :aliases {"test-auto"  ["with-profile" "dev" "do"
-                          ["clean"]
-                          ["shadow" "watch" "browser-test"]]
-            "karma-once" ["do"
-                          ["clean"]
-                          ["shadow" "compile" "karma-test"]
-                          ["shell" "karma" "start" "--single-run" "--reporters" "junit,dots"]]}
+  :aliases {"watch" ["with-profile" "dev" "do"
+                     ["clean"]
+                     ["shadow" "watch" "browser-test" "karma-test"]]
+
+            "ci"    ["do"
+                     ["clean"]
+                     ["shadow" "compile" "karma-test"]
+                     ["shell" "karma" "start" "--single-run" "--reporters" "junit,dots"]]}
 
   :deploy-repositories [["clojars" {:sign-releases false
                                     :url           "https://clojars.org/repo"
