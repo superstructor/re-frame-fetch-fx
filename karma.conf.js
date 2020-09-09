@@ -1,5 +1,5 @@
 module.exports = function (config) {
-  var junitOutputDir = process.env.CIRCLE_TEST_REPORTS || "target/junit"
+  var junitOutputDir = "target/junit"
 
   config.set({
     browsers: ['ChromeHeadless'],
