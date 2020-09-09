@@ -11,11 +11,13 @@
     (rf/reg-event-fx :localhost-test-success
                      (fn [_ [_ {:keys [ok?]}]]
                        (is ok?)
-                       (done)))
+                       (done)
+                       {}))
     (rf/reg-event-fx :localhost-test-failure
                      (fn [_ [_ res]]
                        (is false)
-                       (done)))
+                       (done)
+                       {}))
     (rf/reg-event-fx :localhost-test
                      (fn [_ _]
                        {:fetch {:method     :get
