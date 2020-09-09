@@ -102,7 +102,7 @@
 
 (defn js-response->clj
   "Returns a new ClojureScript map of the js/Response JavaScript object."
-  [js-response]
+  [^js js-response]
   {:url         (.-url js-response)
    :ok?         (.-ok js-response)
    :redirected? (.-redirected js-response)
