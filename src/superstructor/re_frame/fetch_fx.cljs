@@ -147,7 +147,7 @@
 
 (defn body-success-handler
   [{:as   request
-    :keys [request-id on-success on-failure]
+    :keys [request-id envelope? on-success on-failure]
     :or   {on-success [:fetch-no-on-success]
            on-failure [:fetch-no-on-failure]}}
    response reader-kw js-body]
@@ -155,25 +155,35 @@
   (let [body      (if (= :json reader-kw)
                     (js->clj js-body :keywordize-keys true)
                     js-body)
-        response' (assoc response
-                    :body   body
-                    :reader reader-kw)]
-    (if (:ok? response')
-      (dispatch (conj on-success response'))
-      (dispatch (conj on-failure (assoc response' :problem :server))))))
+        response  (cond->
+                    (assoc response
+                      :body   body
+                      :reader reader-kw)
+                    (not (:ok? response))
+                    (assoc :problem :server))
+        handler   (if (:ok? response)
+                    on-success
+                    on-failure)
+        event     (if envelope?
+                    (assoc-in handler [1 ::response] response)
+                    (conj handler response))]
+    (dispatch event)))
 
 (defn body-problem-handler
   [{:as   request
-    :keys [request-id on-failure]
+    :keys [request-id envelope? on-failure]
     :or   {on-failure [:fetch-no-on-failure]}}
    response reader-kw js-error]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
   (let [problem-message (obj/get js-error "message")
-        response'       (assoc response
+        response        (assoc response
                           :problem         :body
                           :reader          reader-kw
-                          :problem-message problem-message)]
-    (dispatch (conj on-failure response'))))
+                          :problem-message problem-message)
+        event           (if envelope?
+                          (assoc-in on-failure [1 ::response] response)
+                          (conj on-failure response))]
+    (dispatch event)))
 
 (defn response-success-handler
   "Reads the js/Response JavaScript Object stream to completion. Returns nil."
@@ -191,22 +201,28 @@
 
 (defn response-problem-handler
   [{:as   request
-    :keys [request-id on-failure]
+    :keys [request-id envelope? on-failure]
     :or   {on-failure [:fetch-no-on-failure]}}
    js-error]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
   (let [problem         (if (= :timeout js-error) :timeout :fetch)
-        problem-message (if (= :timeout js-error) "Fetch timed out" (obj/get js-error "message"))]
-    (dispatch (conj on-failure
-                    {:problem         problem
-                     :problem-message problem-message}))))
+        problem-message (if (= :timeout js-error) "Fetch timed out" (obj/get js-error "message"))
+        response        {:problem         problem
+                         :problem-message problem-message}
+        event           (if envelope?
+                          (assoc-in on-failure [1 ::response] response)
+                          (conj on-failure response))]
+    (dispatch event)))
 
 (defn fetch
   "Initialise the request. Returns nil."
-  [{:keys [url timeout params request-id on-request-id] :as request
+  [{:keys [url timeout params request-id envelope? on-request-id] :as request
     :or   {request-id (keyword (gensym "fetch-fx-"))}}]
   (when (vector? on-request-id)
-    (dispatch (conj on-request-id request-id)))
+    (let [event (if envelope?
+                  (assoc-in on-request-id [1 ::request-id] request-id)
+                  (conj on-request-id request-id))]
+      (dispatch event)))
   (let [request'            (assoc request :request-id request-id)
         url'                (str url (params->str params))
         js-abort-controller (js/AbortController.)]
@@ -219,12 +235,15 @@
         (.catch (partial response-problem-handler request')))))
 
 (defn fetch-fx
-  [effect]
+  [envelope? effect]
   (let [seq-of-effects (->seq effect)]
     (doseq [effect seq-of-effects]
-      (fetch effect))))
+      (let [with-defaults (merge {:envelope? envelope?}
+                                 effect)]
+        (fetch with-defaults)))))
 
-(reg-fx :fetch fetch-fx)
+(reg-fx :fetch (partial fetch-fx false)) ;; deprecated
+(reg-fx ::fetch (partial fetch-fx true))
 
 (defn abort
   [{:keys [request-id]}]
@@ -239,4 +258,5 @@
     (doseq [effect seq-of-effects]
       (abort effect))))
 
-(reg-fx :fetch/abort abort-fx)
+(reg-fx :fetch/abort abort-fx) ;; deprecated
+(reg-fx ::abort abort-fx)
