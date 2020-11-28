@@ -55,6 +55,8 @@
          (fetch-fx/params->str {})))
   (is (= "?sort=desc&start=0"
          (fetch-fx/params->str {:sort :desc :start 0})))
+  (is (= "?ids=1&ids=2&ids=3&ids=4"
+         (fetch-fx/params->str {:ids [1 2 3 4]})))
   (is (= "?fq=Expect%20nothing%2C%20%5Ba-z%26%26%5B%5Eaeiou%5D%5D&debug=timing"
          (fetch-fx/params->str {:fq         "Expect nothing, [a-z&&[^aeiou]]"
                                 :debug 'timing}))))

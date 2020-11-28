@@ -21,14 +21,19 @@
     (name x)
     (str x)))
 
+(defn encode-kv [k v]
+  (str (js/encodeURIComponent (->str k)) "="
+       (js/encodeURIComponent (->str v))))
+
 (defn params->str
   "Returns a URI-encoded string of the params."
   [params]
   (if (zero? (count params))
     ""
     (let [reducer (fn [ret k v]
-                    (conj ret (str (js/encodeURIComponent (->str k)) "="
-                                   (js/encodeURIComponent (->str v)))))
+                    (conj ret (if (vector? v)
+                                (string/join "&" (map (fn [x] (encode-kv k x)) v))
+                                (encode-kv k v))))
           pairs   (reduce-kv reducer [] params)]
       (str "?" (string/join "&" pairs)))))
 
