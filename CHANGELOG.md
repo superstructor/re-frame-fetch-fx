@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.1.0 (2020-12-24)
+
 #### Added
 
 - Add support for array in query parameters. See [#3](https://github.com/superstructor/re-frame-fetch-fx/pull/3). Thanks to [@kucerm2](https://github.com/kucerm2).
