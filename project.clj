@@ -8,7 +8,7 @@
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library
                                org.clojure/google-closure-library-third-party]]
-                 [thheller/shadow-cljs      "2.11.2"   :scope "provided"]
+                 [thheller/shadow-cljs      "2.11.10"   :scope "provided"]
                  [re-frame                  "1.1.1-77-4d5e9850-SNAPSHOT"   :scope "provided"]]
 
   :profiles {:dev {:dependencies [[binaryage/devtools "1.0.2"]]}}
