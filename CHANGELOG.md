@@ -2,6 +2,7 @@
 
 #### Changed
 
+- Upgrade re-frame to 1.1.2
 - Upgrade ClojureScript to 1.10.773
 - Upgrade lein-shadow to 0.2.0
 - Upgrade binaryage/devtools to 1.0.2
