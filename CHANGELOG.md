@@ -1,5 +1,9 @@
 ## Unreleased
 
+#### Added
+
+- Add support for array in query parameters. See [#3](https://github.com/superstructor/re-frame-fetch-fx/pull/3). Thanks to [@kucerm2](https://github.com/kucerm2).
+
 #### Changed
 
 - Upgrade re-frame to 1.1.2
@@ -7,7 +11,7 @@
 - Upgrade lein-shadow to 0.3.1
 - Upgrade binaryage/devtools to 1.0.2
 - Upgrade thheller/shadow-cljs to 2.11.10
-- Upgrade karma to 5.1.0
+- Upgrade karma to 5.2.2
 
 ## 0.0.2
 
