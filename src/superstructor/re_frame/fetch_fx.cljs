@@ -4,6 +4,14 @@
     [goog.object :as obj]
     [re-frame.core :refer [reg-fx dispatch]]))
 
+(defn default-json-reader
+  ([] :json)
+  ([js-body] (js->clj js-body :keywordize-keys true)))
+
+(defn default-text-reader
+  ([] :text)
+  ([js-body] js-body))
+
 ;; Utilities
 ;; =============================================================================
 
@@ -117,19 +125,39 @@
    :final-uri?  (.-useFinalURL js-response)
    :headers     (js-headers->clj (.-headers js-response))})
 
-(defn response->reader-kw
-  "Returns a keyword of the type of reader to use for the body of the
-   response according to the Content-Type header."
+(defn ->reader
+  "Wrap a normal keyword on a reader function (see `response->header`), and
+   set a default json body reader."
+  [reader-or-kw]
+  (cond
+    ;; default json body reader
+    (and (keyword? reader-or-kw)
+         (#{:json} reader-or-kw)) default-json-reader
+
+    ;; identity wrap reader
+    (keyword? reader-or-kw) (fn
+                              ([] reader-or-kw)
+                              ([js-body] js-body))
+    ;; user provided reader
+    :else reader-or-kw))
+
+(defn response->reader
+  "Returns a reader funtion or the `default-text-reader` to use for the body of the
+   response according to the Content-Type header.
+   A reader function is one with 2 arities:
+   - 0 arity: return a keyword to indicate what js/Body method should be used.
+   - 1 arity: return the `js-body` processed as required."
   [{:keys [response-content-types]} response]
-  (let [content-type (get-in response [:headers :content-type] "text/plain")]
-    (reduce-kv
-      (fn [ret pattern reader]
-        (if (or (and (string? pattern) (= content-type pattern))
-                (and (regexp? pattern) (re-find pattern content-type)))
-          (reduced reader)
-          ret))
-      :text
-      response-content-types)))
+  (let [content-type (get-in response [:headers :content-type] "text/plain")
+        reader (reduce-kv
+                (fn [ret pattern reader]
+                  (if (or (and (string? pattern) (= content-type pattern))
+                          (and (regexp? pattern) (re-find pattern content-type)))
+                    (reduced reader)
+                    ret))
+                default-text-reader
+                response-content-types)]
+    (->reader reader)))
 
 (defn timeout-race
   "Returns a js/Promise JavaScript object that is a race between another
@@ -155,15 +183,13 @@
     :keys [request-id envelope? on-success on-failure]
     :or   {on-success [:fetch-no-on-success]
            on-failure [:fetch-no-on-failure]}}
-   response reader-kw js-body]
+   response reader js-body]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
-  (let [body      (if (= :json reader-kw)
-                    (js->clj js-body :keywordize-keys true)
-                    js-body)
+  (let [body      (reader js-body)
         response  (cond->
                     (assoc response
                       :body   body
-                      :reader reader-kw)
+                      :reader (reader))
                     (not (:ok? response))
                     (assoc :problem :server))
         handler   (if (:ok? response)
@@ -194,15 +220,15 @@
   "Reads the js/Response JavaScript Object stream to completion. Returns nil."
   [request js-response]
   (let [response (js-response->clj js-response)
-        reader-kw (response->reader-kw request response)]
-    (-> (case reader-kw
+        reader (response->reader request response)]
+    (-> (case (reader)
           :json (.json js-response)
           :form-data (.formData js-response)
           :blob (.blob js-response)
           :array-buffer (.arrayBuffer js-response)
           :text (.text js-response))
-        (.then (partial body-success-handler request response reader-kw))
-        (.catch (partial body-problem-handler request response reader-kw)))))
+        (.then (partial body-success-handler request response reader))
+        (.catch (partial body-problem-handler request response reader)))))
 
 (defn response-problem-handler
   [{:as   request
