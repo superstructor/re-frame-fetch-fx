@@ -4,13 +4,13 @@
     [goog.object :as obj]
     [re-frame.core :refer [reg-fx dispatch]]))
 
-(defn default-json-reader
-  ([] :json)
-  ([js-body] (js->clj js-body :keywordize-keys true)))
+(def default-json-reader
+  {:reader-kw :json
+   :reader-fn #(js->clj % :keywordize-keys true)})
 
-(defn default-text-reader
-  ([] :text)
-  ([js-body] js-body))
+(def default-text-reader
+  {:reader-kw :text
+   :reader-fn identity})
 
 ;; Utilities
 ;; =============================================================================
@@ -126,7 +126,7 @@
    :headers     (js-headers->clj (.-headers js-response))})
 
 (defn ->reader
-  "Wrap a normal keyword on a reader function (see `response->header`), and
+  "Wrap a normal keyword on a reader map (see `response->header`), and
    set a default json body reader."
   [reader-or-kw]
   (cond
@@ -135,18 +135,17 @@
          (#{:json} reader-or-kw)) default-json-reader
 
     ;; identity wrap reader
-    (keyword? reader-or-kw) (fn
-                              ([] reader-or-kw)
-                              ([js-body] js-body))
+    (keyword? reader-or-kw) {:reader-kw reader-or-kw
+                             :reader-fn identity}
     ;; user provided reader
     :else reader-or-kw))
 
 (defn response->reader
-  "Returns a reader funtion or the `default-text-reader` to use for the body of the
+  "Returns a reader map or the `default-text-reader` to use for the body of the
    response according to the Content-Type header.
-   A reader function is one with 2 arities:
-   - 0 arity: return a keyword to indicate what js/Body method should be used.
-   - 1 arity: return the `js-body` processed as required."
+   A reader map is one with 2 keys:
+   - `reader-kw`: a keyword to indicate what js/Body method should be used.
+   - `reader-fn`: a function that processes the `js-body` as required."
   [{:keys [response-content-types]} response]
   (let [content-type (get-in response [:headers :content-type] "text/plain")
         reader (reduce-kv
@@ -183,28 +182,32 @@
     :keys [request-id envelope? on-success on-failure]
     :or   {on-success [:fetch-no-on-success]
            on-failure [:fetch-no-on-failure]}}
-   response reader js-body]
+   response
+   {:keys [reader-kw reader-fn] :as _reader}
+   js-body]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
-  (let [body      (reader js-body)
-        response  (cond->
-                    (assoc response
-                      :body   body
-                      :reader (reader))
-                    (not (:ok? response))
-                    (assoc :problem :server))
-        handler   (if (:ok? response)
-                    on-success
-                    on-failure)
-        event     (if envelope?
-                    (assoc-in handler [1 ::response] response)
-                    (conj handler response))]
+  (let [body     (reader-fn js-body)
+        response (cond->
+                     (assoc response
+                            :body   body
+                            :reader reader-kw)
+                   (not (:ok? response))
+                   (assoc :problem :server))
+        handler  (if (:ok? response)
+                   on-success
+                   on-failure)
+        event    (if envelope?
+                   (assoc-in handler [1 ::response] response)
+                   (conj handler response))]
     (dispatch event)))
 
 (defn body-problem-handler
   [{:as   request
     :keys [request-id envelope? on-failure]
     :or   {on-failure [:fetch-no-on-failure]}}
-   response reader-kw js-error]
+   response
+   {:keys [reader-kw] :as _reader}
+   js-error]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
   (let [problem-message (obj/get js-error "message")
         response        (assoc response
@@ -219,9 +222,9 @@
 (defn response-success-handler
   "Reads the js/Response JavaScript Object stream to completion. Returns nil."
   [request js-response]
-  (let [response (js-response->clj js-response)
-        reader (response->reader request response)]
-    (-> (case (reader)
+  (let [response                       (js-response->clj js-response)
+        {:keys [reader-kw] :as reader} (response->reader request response)]
+    (-> (case reader-kw
           :json (.json js-response)
           :form-data (.formData js-response)
           :blob (.blob js-response)
