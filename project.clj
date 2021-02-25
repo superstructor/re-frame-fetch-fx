@@ -9,7 +9,7 @@
                                org.clojure/google-closure-library
                                org.clojure/google-closure-library-third-party]]
                  [thheller/shadow-cljs      "2.11.18"   :scope "provided"]
-                 [re-frame                  "1.1.2"     :scope "provided"]]
+                 [re-frame                  "1.2.0"     :scope "provided"]]
 
   :profiles {:dev {:dependencies [[binaryage/devtools "1.0.2"]]}}
 
