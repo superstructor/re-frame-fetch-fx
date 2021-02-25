@@ -95,18 +95,21 @@
          (fetch-fx/js-response->clj (js/Response.)))))
 
 (deftest response->reader-test
-  (is (= :text
-         (fetch-fx/response->reader-kw
-           {}
-           {:headers {:content-type "application/json"}})))
-  (is (= :blob
-         (fetch-fx/response->reader-kw
-           {:response-content-types {"text/plain" :blob}}
-           {:headers {}})))
-  (is (= :json
-         (fetch-fx/response->reader-kw
-           {:response-content-types {#"(?i)application/.*json" :json}}
-           {:headers {:content-type "application/json"}}))))
+  (let [{:keys [reader-kw reader-fn]} (fetch-fx/response->reader
+                                        {}
+                                        {:headers {:content-type "application/json"}})]
+    (is (= :text reader-kw))
+    (is (fn? reader-fn)))
+  (let [{:keys [reader-kw reader-fn]} (fetch-fx/response->reader
+                                        {:response-content-types {"text/plain" :blob}}
+                                        {:headers {}})]
+    (is (= :blob reader-kw))
+    (is (nil? (reader-fn)))) ;; TODO: is this correct ?
+  (let [{:keys [reader-kw reader-fn]} (fetch-fx/response->reader
+                                        {:response-content-types {#"(?i)application/.*json" :json}}
+                                        {:headers {:content-type "application/json"}})]
+    (is (= :json reader-kw))
+    (is (fn? reader-fn))))
 
 (deftest timeout-race-test
   (async done
