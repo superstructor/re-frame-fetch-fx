@@ -1,5 +1,9 @@
 ## Unreleased
 
+#### Added
+
+- Add support for custom response content types. See [#4](https://github.com/superstructor/re-frame-fetch-fx/pull/4). Thanks to [@marc-sabates-gelpi](https://github.com/marc-sabates-gelpi).
+
 ## 0.1.0 (2020-12-24)
 
 #### Added
