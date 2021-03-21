@@ -25,7 +25,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
 === Step 1. Add Dependency
 
 Add the following project dependency:
-image:https://img.shields.io/clojars/v/superstructor/re-frame-fetch-fx.svg["Clojars Project", link="https://clojars.org/superstructor/re-frame-fetch-fx"]
+image:https://img.shields.io/clojars/v/superstructor/re-frame-fetch-fx?stlye=for-the-badge&logo=clojure&logoColor=fff["Clojars Project", link="https://clojars.org/superstructor/re-frame-fetch-fx"]
 
 Requires re-frame >= 0.8.0.
 
