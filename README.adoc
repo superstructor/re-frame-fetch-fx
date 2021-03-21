@@ -7,13 +7,9 @@
 :toc:
 :icons: font
 
-image:https://github.com/superstructor/re-frame-fetch-fx/workflows/ci/badge.svg["CI", link="https://github.com/superstructor/re-frame-fetch-fx/actions?workflow=ci"]
-image:https://github.com/superstructor/re-frame-fetch-fx/workflows/cd/badge.svg["CD", link="https://github.com/superstructor/re-frame-fetch-fx/actions?workflow=cd"]
-image:https://img.shields.io/github/v/tag/superstructor/re-frame-fetch-fx?style=flat["GitHub tag (latest by date)", link="https://github.com/superstructor/re-frame-fetch-fx/tags"]
-image:https://img.shields.io/clojars/v/superstructor/re-frame-fetch-fx.svg["Clojars Project", link="https://clojars.org/superstructor/re-frame-fetch-fx"]
-image:https://img.shields.io/github/issues-raw/superstructor/re-frame-fetch-fx?style=flat["GitHub issues", link="https://github.com/superstructor/re-frame-fetch-fx/issues"]
-image:https://img.shields.io/github/issues-pr/superstructor/re-frame-fetch-fx?style=flat["GitHub pull requests", link="https://github.com/superstructor/re-frame-fetch-fx/pulls"]
-image:https://img.shields.io/github/license/superstructor/re-frame-fetch-fx?style=flat["License", link="https://github.com/superstructor/re-frame-fetch-fx/blob/master/LICENSE"]
+image:https://img.shields.io/clojars/v/superstructor/re-frame-fetch-fx?style=for-the-badge&logo=clojure&logoColor=fff["Clojars Project", link="https://clojars.org/superstructor/re-frame-fetch-fx"]
+image:https://img.shields.io/github/issues-raw/superstructor/re-frame-fetch-fx?style=for-the-badge&logo=github["GitHub issues", link="https://github.com/superstructor/re-frame-fetch-fx/issues"]
+image:https://img.shields.io/github/license/superstructor/re-frame-fetch-fx?style=for-the-badge["License", link="https://github.com/superstructor/re-frame-fetch-fx/blob/master/LICENSE"]
 
 == js/Fetch Effect Handler for re-frame
 
