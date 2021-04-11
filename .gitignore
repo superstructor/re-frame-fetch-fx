@@ -3,7 +3,5 @@
 /pom.xml
 /.shadow-cljs/
 /node_modules/
-/package-lock.json
-/package.json
 /shadow-cljs.edn
 /target/
