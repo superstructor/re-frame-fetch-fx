@@ -3,7 +3,7 @@
   :url         "https://github.com/superstructor/re-frame-fetch-fx.git"
   :license     {:name "MIT"}
 
-  :dependencies [[org.clojure/clojure       "1.10.2"   :scope "provided"]
+  :dependencies [[org.clojure/clojure       "1.10.3"   :scope "provided"]
                  [org.clojure/clojurescript "1.10.773" :scope "provided"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library
