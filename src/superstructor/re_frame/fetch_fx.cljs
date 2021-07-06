@@ -187,10 +187,10 @@
    js-body]
   (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
   (let [body     (reader-fn js-body)
-        response (cond->
-                     (assoc response
-                            :body   body
-                            :reader reader-kw)
+        response (cond-> response
+                   body
+                   (assoc :body   body
+                          :reader reader-kw)
                    (not (:ok? response))
                    (assoc :problem :server))
         handler  (if (:ok? response)
@@ -224,14 +224,19 @@
   [request js-response]
   (let [response                       (js-response->clj js-response)
         {:keys [reader-kw] :as reader} (response->reader request response)]
-    (-> (case reader-kw
-          :json (.json js-response)
-          :form-data (.formData js-response)
-          :blob (.blob js-response)
-          :array-buffer (.arrayBuffer js-response)
-          :text (.text js-response))
-        (.then (partial body-success-handler request response reader))
-        (.catch (partial body-problem-handler request response reader)))))
+    (if (= "0" (get-in response [:headers :content-length]))
+      (body-success-handler request
+                            response
+                            {:reader-fn identity}
+                            nil)
+      (-> (case reader-kw
+            :json (.json js-response)
+            :form-data (.formData js-response)
+            :blob (.blob js-response)
+            :array-buffer (.arrayBuffer js-response)
+            :text (.text js-response))
+          (.then (partial body-success-handler request response reader))
+          (.catch (partial body-problem-handler request response reader))))))
 
 (defn response-problem-handler
   [{:as   request
