@@ -224,7 +224,8 @@
   [request js-response]
   (let [response                       (js-response->clj js-response)
         {:keys [reader-kw] :as reader} (response->reader request response)]
-    (if (= "0" (get-in response [:headers :content-length]))
+    (if (or (= "0" (get-in response [:headers :content-length]))
+            (= 204 (:status response)))
       (body-success-handler request
                             response
                             {:reader-fn identity}
