@@ -4,11 +4,11 @@
   :license     {:name "MIT"}
 
   :dependencies [[org.clojure/clojure       "1.10.3"   :scope "provided"]
-                 [org.clojure/clojurescript "1.10.844" :scope "provided"
+                 [org.clojure/clojurescript "1.10.866" :scope "provided"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library
                                org.clojure/google-closure-library-third-party]]
-                 [thheller/shadow-cljs      "2.12.4"   :scope "provided"]
+                 [thheller/shadow-cljs      "2.15.1"   :scope "provided"]
                  [re-frame                  "1.2.0"    :scope "provided"]]
 
   :profiles {:dev {:dependencies [[binaryage/devtools "1.0.3"]]}}
