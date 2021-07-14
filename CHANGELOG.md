@@ -1,5 +1,11 @@
 ## Unreleased
 
+#### Fixed
+
+- Fix handling of empty response body. See [#5](https://github.com/superstructor/re-frame-fetch-fx/pull/5). Thanks to [@tggreene](https://github.com/tggreene)
+
+## 0.2.0 (2021-02-25)
+
 #### Added
 
 - Add support for custom response content types. See [#4](https://github.com/superstructor/re-frame-fetch-fx/pull/4). Thanks to [@marc-sabates-gelpi](https://github.com/marc-sabates-gelpi).
