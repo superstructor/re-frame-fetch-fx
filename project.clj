@@ -4,11 +4,11 @@
   :license     {:name "MIT"}
 
   :dependencies [[org.clojure/clojure       "1.10.3"   :scope "provided"]
-                 [org.clojure/clojurescript "1.10.866" :scope "provided"
+                 [org.clojure/clojurescript "1.10.879" :scope "provided"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library
                                org.clojure/google-closure-library-third-party]]
-                 [thheller/shadow-cljs      "2.15.1"   :scope "provided"]
+                 [thheller/shadow-cljs      "2.15.2"   :scope "provided"]
                  [re-frame                  "1.2.0"    :scope "provided"]]
   
   :plugins      [[day8/lein-git-inject "0.0.14"]
