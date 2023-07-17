@@ -294,7 +294,7 @@
 
 (defn abort-fx
   [effect]
-  (let [seq-of-effects (-> seq effect)]
+  (let [seq-of-effects (->seq effect)]
     (doseq [effect seq-of-effects]
       (abort effect))))
 
