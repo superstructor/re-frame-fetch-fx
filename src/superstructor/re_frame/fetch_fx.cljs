@@ -58,8 +58,8 @@
 
 (defn request->js-init
   "Returns an init options js/Object to use as the second argument to js/fetch."
-  [{:keys [method headers request-content-type body mode credentials cache redirect referrer integrity] :as request}
-   js-controller]
+  [{:keys [method headers request-content-type body mode credentials cache redirect referrer integrity]}
+   abort-signal]
   (let [mode        (or mode "same-origin")
         credentials (or credentials "include")
         redirect    (or redirect "follow")
@@ -71,9 +71,9 @@
                              headers)
                       headers)]
     (doto
-      #js {;; There is always a controller, as in our impl all requests can be
-           ;; aborted.
-           :signal      (.-signal js-controller)
+      #js {;; There is always a signal, either given as argument when an external AbortController is used,
+           ;; or created by our own internal AbortController instance.
+           :signal      abort-signal
 
            ;; There is always a method, as dispatch is via sub-effects like :get.
            :method      (->str method)
@@ -178,14 +178,13 @@
   (atom {}))
 
 (defn body-success-handler
-  [{:as   request
-    :keys [request-id envelope? on-success on-failure]
+  [{:keys [request-id envelope? on-success on-failure]
     :or   {on-success [:fetch-no-on-success]
            on-failure [:fetch-no-on-failure]}}
    response
    {:keys [reader-kw reader-fn] :as _reader}
    js-body]
-  (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
+  (swap! request-id->js-abort-controller dissoc request-id)
   (let [body     (reader-fn js-body)
         response (cond-> response
                    body
@@ -202,13 +201,12 @@
     (dispatch event)))
 
 (defn body-problem-handler
-  [{:as   request
-    :keys [request-id envelope? on-failure]
+  [{:keys [request-id envelope? on-failure]
     :or   {on-failure [:fetch-no-on-failure]}}
    response
    {:keys [reader-kw] :as _reader}
    js-error]
-  (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
+  (swap! request-id->js-abort-controller dissoc request-id)
   (let [problem-message (obj/get js-error "message")
         response        (assoc response
                           :problem         :body
@@ -239,13 +237,18 @@
           (.then (partial body-success-handler request response reader))
           (.catch (partial body-problem-handler request response reader))))))
 
+(defn js-error->problem [js-error]
+  (cond
+    (= :timeout js-error)              :timeout
+    (= "AbortError" (.-name js-error)) :aborted
+    :else                              :fetch))
+
 (defn response-problem-handler
-  [{:as   request
-    :keys [request-id envelope? on-failure]
+  [{:keys [request-id envelope? on-failure]
     :or   {on-failure [:fetch-no-on-failure]}}
    js-error]
-  (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
-  (let [problem         (if (= :timeout js-error) :timeout :fetch)
+  (swap! request-id->js-abort-controller dissoc request-id)
+  (let [problem         (js-error->problem js-error)
         problem-message (if (= :timeout js-error) "Fetch timed out" (obj/get js-error "message"))
         response        {:problem         problem
                          :problem-message problem-message}
@@ -256,7 +259,7 @@
 
 (defn fetch
   "Initialise the request. Returns nil."
-  [{:keys [url timeout params request-id envelope? on-request-id] :as request
+  [{:keys [url timeout params request-id envelope? on-request-id abort-signal] :as request
     :or   {request-id (keyword (gensym "fetch-fx-"))}}]
   (when (vector? on-request-id)
     (let [event (if envelope?
@@ -265,12 +268,13 @@
       (dispatch event)))
   (let [request'            (assoc request :request-id request-id)
         url'                (str url (params->str params))
-        js-abort-controller (js/AbortController.)]
-    (swap! request-id->js-abort-controller
-           #(assoc %1 %2 %3)
-           request-id
-           js-abort-controller)
-    (-> (timeout-race (js/fetch url' (request->js-init request' js-abort-controller)) timeout)
+        js-abort-controller (when-not abort-signal (js/AbortController.))
+        abort-signal'       (or abort-signal (.-signal js-abort-controller))]
+    (some->> js-abort-controller
+      (swap! request-id->js-abort-controller
+        assoc
+        request-id))
+    (-> (timeout-race (js/fetch url' (request->js-init request' abort-signal')) timeout)
         (.then (partial response-success-handler request'))
         (.catch (partial response-problem-handler request')))))
 
@@ -289,7 +293,7 @@
   [{:keys [request-id]}]
   (let [js-abort-controller (get @request-id->js-abort-controller request-id)]
     (when js-abort-controller
-      (swap! request-id->js-abort-controller #(dissoc %1 %2) request-id)
+      (swap! request-id->js-abort-controller dissoc request-id)
       (.abort js-abort-controller))))
 
 (defn abort-fx
