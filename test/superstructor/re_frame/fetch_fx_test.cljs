@@ -1,8 +1,6 @@
 (ns superstructor.re-frame.fetch-fx-test
   (:require
-    [clojure.test :refer [deftest is testing async use-fixtures]]
-    [clojure.spec.alpha :as s]
-    [goog.object :as obj]
+    [clojure.test :refer [deftest is async]]
     [re-frame.core :as rf]
     [superstructor.re-frame.fetch-fx :as fetch-fx]))
 
@@ -26,6 +24,30 @@
                                 :on-success [:localhost-test-success]
                                 :on-failure [:localhost-test-failure]}}))
     (rf/dispatch [:localhost-test])))
+
+(deftest abort-signal-test
+  (async done
+    (rf/reg-event-fx :abort-test-success
+      (fn [_ [_ _]]
+        (is false)
+        (done)
+        {}))
+    (rf/reg-event-fx :abort-test-failure
+      (fn [_ [_ {:keys [problem]}]]
+        (is (= problem :aborted))
+        (done)
+        {}))
+    (let [abort-controller (js/AbortController.)]
+      (rf/reg-event-fx :abort-test
+        (fn [_ _]
+          {:fetch {:method       :get
+                   :abort-signal (.-signal abort-controller)
+                   :mode         :no-cors
+                   :url          js/window.location.href
+                   :on-success   [:abort-test-success]
+                   :on-failure   [:abort-test-failure]}}))
+      (.abort abort-controller)
+      (rf/dispatch [:abort-test]))))
 
 ;; Utilities
 ;; =============================================================================
@@ -68,13 +90,13 @@
            (.get js-headers "content-type")))))
 
 (deftest request->js-init-test
-  (let [js-abort-controller (js/AbortController.)
+  (let [abort-signal        (.-signal (js/AbortController.))
         js-init             (fetch-fx/request->js-init
                               {:method "GET"}
-                              js-abort-controller)]
+                              abort-signal)]
     (is (= "{\"signal\":{},\"method\":\"GET\",\"mode\":\"same-origin\",\"credentials\":\"include\",\"redirect\":\"follow\"}"
            (js/JSON.stringify js-init)))
-    (is (= (.-signal js-abort-controller)
+    (is (= abort-signal
            (.-signal js-init)))))
 
 (deftest js-headers->clj-test
