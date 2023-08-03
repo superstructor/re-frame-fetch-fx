@@ -167,7 +167,13 @@ All possible values of a `:fetch` map.
                                       #"image/.*"                :blob
                                       "application/octet-stream" :array-buffer}
 
-             ;; for :fetch/abort
+             ;; Optional. If you want to associate multiple requests with a single
+             ;; AbortSignal you can pass it as value for the :abort-signal and use your own
+             ;; (external) AbortController to handle aborts.
+             :abort-signal            (.-signal (js/AbortController)
+
+             ;; Use :request-id with ::abort effect to abort the request
+             ;; Note: when using :abort-signal you cannot abort the request using :request-id
              :request-id             :my-custom-request-id
              ;; or auto-generated
              :on-request-id          [:fetch-request-id]
@@ -176,6 +182,25 @@ All possible values of a `:fetch` map.
 
              :on-failure             [:bad-fetch-result]}}))
 ```
+
+== Aborting Requests
+There are two different ways you can abort requests:
+
+ * Abort a (single) request by passing its **request-id** to the `::abort` effect:
+```
+(reg-event-fx
+  :abort-request
+  (fn [_ [request-id]]
+    {::abort {:request-id request-id}}))
+```
+**Note:** Reusing the same request-id for multiple different requests **will not work**.
+          The `::abort` effect would only abort the last of these requests.
+
+* Abort multiple requests by using an external **AbortController**. Pass the AbortController's  **AbortSignal** instance
+as value for the `:abort-signal` inside the `::fetch` effect map.
+
+**Note**: When you decide to use an external AbortController by passing its `:abort-signal`
+          in the `::fetch` map, you **cannot** abort this request via the `::abort` effect anymore.
 
 == Success Handling
 
