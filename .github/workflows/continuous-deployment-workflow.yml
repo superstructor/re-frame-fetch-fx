@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container:
       # Ref: https://github.community/t5/GitHub-Actions/docker-pull-from-public-GitHub-Package-Registry-fail-with-quot/m-p/32782
       image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
@@ -17,7 +17,7 @@ jobs:
   release:
     name: Release
     needs: test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container:
       # Ref: https://github.community/t5/GitHub-Actions/docker-pull-from-public-GitHub-Package-Registry-fail-with-quot/m-p/32782
       image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
