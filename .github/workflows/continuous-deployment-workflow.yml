@@ -8,25 +8,41 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    container:
-      # Ref: https://github.community/t5/GitHub-Actions/docker-pull-from-public-GitHub-Package-Registry-fail-with-quot/m-p/32782
-      image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          fetch-depth: 0
-      - run: lein ci
+          node-version: '18'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - uses: DeLaGuardo/setup-clojure@11.0
+        with:
+          lein: 2.9.1
+      - uses: browser-actions/setup-chrome@v1
+      - run: npm -g install karma-cli
+      - run: |
+          npm ci
+          lein ci
   release:
     name: Release
     needs: test
     runs-on: ubuntu-latest
-    container:
-      # Ref: https://github.community/t5/GitHub-Actions/docker-pull-from-public-GitHub-Package-Registry-fail-with-quot/m-p/32782
-      image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - uses: DeLaGuardo/setup-clojure@11.0
+        with:
+          lein: 2.9.1
       - name: Run lein release
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
