@@ -13,6 +13,8 @@ jobs:
       image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - run: lein ci
   release:
     name: Release
@@ -23,6 +25,8 @@ jobs:
       image: superstructor/clojure:openjdk-11-lein-2.9.1-node-browsers
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Run lein release
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
