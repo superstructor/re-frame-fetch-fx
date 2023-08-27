@@ -14,9 +14,9 @@ jobs:
         with:
           distribution: 'microsoft'
           java-version: '17'
-      - uses: actions/setup-clojure@v11
+      - uses: DeLaGuardo/setup-clojure@v11
         with:
           lein: 2.9.1
-      - uses: actions/setup-chrome@v1
+      - uses: browser-actions/setup-chrome@v1
       - run: npm -g install karma-cli
       - run: lein ci
