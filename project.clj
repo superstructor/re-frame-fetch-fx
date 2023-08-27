@@ -15,6 +15,10 @@
                  [lein-shadow          "0.4.1"]
                  [lein-shell           "0.5.0"]]
 
+  :git-inject {
+    :ignore-dirty? true
+  }
+
   :profiles {:dev {:dependencies [[binaryage/devtools      "1.0.7"]]
                    :plugins      [[com.github.liquidz/antq "RELEASE"]
                                   [lein-pprint             "1.3.2"]]}}
