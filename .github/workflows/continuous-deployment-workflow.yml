@@ -19,7 +19,7 @@ jobs:
           java-version: '17'
       - uses: DeLaGuardo/setup-clojure@11.0
         with:
-          lein: 2.9.1
+          lein: 2.10.0
       - uses: browser-actions/setup-chrome@v1
       - run: npm -g install karma-cli
       - run: |
@@ -42,7 +42,7 @@ jobs:
           java-version: '17'
       - uses: DeLaGuardo/setup-clojure@11.0
         with:
-          lein: 2.9.1
+          lein: 2.10.0
       - name: Run lein release
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
