@@ -19,4 +19,6 @@ jobs:
           lein: 2.9.1
       - uses: browser-actions/setup-chrome@v1
       - run: npm -g install karma-cli
-      - run: lein ci
+      - run: |
+          npm ci
+          lein ci
