@@ -21,6 +21,12 @@
 
   :middleware   [leiningen.git-inject/middleware]
 
+  :npm-dev-deps [[karma "6.3.4"]
+                 [karma-chrome-launcher "3.1.0"]
+                 [karma-cljs-test "0.1.0"]
+                 [karma-junit-reporter "2.0.1"]
+                 [shadow-cljs "2.15.2"]]
+
   :jvm-opts ["-Xmx2g"]
 
   :source-paths   ["src"]
