@@ -3,19 +3,19 @@
   :url         "https://github.com/superstructor/re-frame-fetch-fx.git"
   :license     {:name "MIT"}
 
-  :dependencies [[org.clojure/clojure       "1.10.3"   :scope "provided"]
-                 [org.clojure/clojurescript "1.10.879" :scope "provided"
+  :dependencies [[org.clojure/clojure       "1.11.1"   :scope "provided"]
+                 [org.clojure/clojurescript "1.11.60" :scope "provided"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library
                                org.clojure/google-closure-library-third-party]]
-                 [thheller/shadow-cljs      "2.15.2"   :scope "provided"]
-                 [re-frame                  "1.2.0"    :scope "provided"]]
+                 [thheller/shadow-cljs      "2.25.3"   :scope "provided"]
+                 [re-frame                  "1.3.0"    :scope "provided"]]
   
   :plugins      [[day8/lein-git-inject "0.0.15"]
-                 [lein-shadow          "0.4.0"]
+                 [lein-shadow          "0.4.1"]
                  [lein-shell           "0.5.0"]]
 
-  :profiles {:dev {:dependencies [[binaryage/devtools      "1.0.3"]]
+  :profiles {:dev {:dependencies [[binaryage/devtools      "1.0.7"]]
                    :plugins      [[com.github.liquidz/antq "RELEASE"]
                                   [lein-pprint             "1.3.2"]]}}
 
@@ -25,7 +25,7 @@
                  [karma-chrome-launcher "3.1.0"]
                  [karma-cljs-test "0.1.0"]
                  [karma-junit-reporter "2.0.1"]
-                 [shadow-cljs "2.15.2"]]
+                 [shadow-cljs "2.25.3"]]
 
   :jvm-opts ["-Xmx2g"]
 
